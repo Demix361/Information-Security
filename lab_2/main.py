@@ -57,8 +57,7 @@ def encode(rotors, deflector, message):
 
         for j in range(len(rotors)):
             if rotors[j].pos == s - 1:
-                rotors[j].pos = -1
-                rotors[j].pos += 1
+                rotors[j].pos = 0
             else:
                 rotors[j].pos += 1
                 break
@@ -69,30 +68,27 @@ def encode(rotors, deflector, message):
 
 
 def main():
-    alph_size = 10
+    alph_size = 26  # 10
     alphabet = [i for i in range(alph_size)]
 
-    message = [3, 4, 8, 5, 0]
-    message = [6, 7, 5, 0, 7]
-    #message = [randint(0, alph_size - 1) for i in range(5)]
+    #message = [3, 4, 8, 5, 0]
+    #message = [6, 7, 5, 0, 7]
+    message = [randint(0, alph_size - 1) for i in range(50)]
 
 
     rotor_1 = Rotor(alphabet)
     rotor_2 = Rotor(alphabet)
     rotor_3 = Rotor(alphabet)
-    # rotor_1.symbols = [1, 0, 3, 8, 6, 4, 2, 5, 7, 9]
-    # rotor_2.symbols = [5, 0, 1, 2, 8, 4, 7, 3, 9, 6]
-    # rotor_3.symbols = [1, 8, 2, 0, 3, 9, 5, 6, 4, 7]
-    rotor_1.symbols = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
-    rotor_2.symbols = [4, 5, 6, 7, 8, 9, 0, 1, 2, 3]
-    rotor_3.symbols = [7, 8, 9, 0, 1, 2, 3, 4, 5, 6]
+    # rotor_1.symbols = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
+    # rotor_2.symbols = [4, 5, 6, 7, 8, 9, 0, 1, 2, 3]
+    # rotor_3.symbols = [7, 8, 9, 0, 1, 2, 3, 4, 5, 6]
     deflector = Deflector(alphabet)
 
     rotors = [rotor_1, rotor_2, rotor_3]
     print(rotor_1.symbols)
     print(rotor_2.symbols)
     print(rotor_3.symbols)
-    #print(deflector.symbols)
+
 
     print()
     print(message)
