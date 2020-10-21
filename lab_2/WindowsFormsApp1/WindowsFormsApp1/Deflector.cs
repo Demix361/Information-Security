@@ -12,6 +12,7 @@ namespace WindowsFormsApp1
         private int[] alphabet;
         private int[] symbols;
 
+        // Properties
         public int[] Alphabet
         { get; set; }
         public int[] Symbols
@@ -37,5 +38,13 @@ namespace WindowsFormsApp1
             return Symbols[Array.IndexOf(Alphabet, symbol)];
         }
 
+        public void print()
+        {
+            for (int i = 0; i < Symbols.Length; i++)
+            {
+                Console.Write($"{Symbols[i]} ");
+            }
+            Console.WriteLine();
+        }
     }
 }

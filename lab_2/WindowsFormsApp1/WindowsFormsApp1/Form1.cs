@@ -43,14 +43,15 @@ namespace WindowsFormsApp1
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Encoding ascii = Encoding.ASCII;
+            Encoding asciiEncoding = Encoding.ASCII;
+            Encoding defaultEncoding = Encoding.Default;
 
             string alphSizeInput = textBox1.Text;
             string rotorAmountInput = numericUpDown1.Text;
             String messageInput = textBox2.Text;
             
 
-            Byte[] encodedBytes = ascii.GetBytes(messageInput);
+            Byte[] encodedBytes = defaultEncoding.GetBytes(messageInput);
             int[] message = new int[encodedBytes.Length];
 
             for (int i = 0; i < encodedBytes.Length; i++)
@@ -67,7 +68,8 @@ namespace WindowsFormsApp1
                 alphabet[i] = i;
             }
 
-            if (Rotors == null || Rotors.Length != rotorAmount)
+            // Создаем новые роторы и дефлектор, если изменилось количество роторов или размерность алфавита
+            if (Rotors == null || Rotors.Length != rotorAmount || alphSize != Rotors[0].Alphabet.Length)
             {
                 Console.WriteLine("[NEW ROTORS]");
                 Rotors = new Rotor[rotorAmount];
@@ -75,9 +77,9 @@ namespace WindowsFormsApp1
                 {
                     Rotors[i] = new Rotor(alphabet);
                 }
-            }
 
-            CurDeflector = new Deflector(alphabet);
+                CurDeflector = new Deflector(alphabet);
+            }
 
             int[] encodedMessage = encode(message);
             Byte[] newEncodedBytes = new Byte[message.Length];
@@ -89,9 +91,9 @@ namespace WindowsFormsApp1
             }
 
             Console.WriteLine();
-            String decodedString = ascii.GetString(newEncodedBytes);
-            Console.WriteLine(decodedString);
-            textBox3.Text = decodedString;
+            String decodedDefault = defaultEncoding.GetString(newEncodedBytes);
+            Console.WriteLine(decodedDefault);
+            textBox3.Text = decodedDefault;
 
             
             
@@ -142,7 +144,53 @@ namespace WindowsFormsApp1
 
         private void button2_Click(object sender, EventArgs e)
         {
+            if (Rotors != null && CurDeflector != null)
+            {
+                for (int i = 0; i < Rotors.Length; i++)
+                {
+                    Rotors[i].load();
+                }
+            }
 
+            Console.WriteLine("[ROTORS LOADED]");
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (Rotors != null && CurDeflector != null)
+            {
+                for (int i = 0; i < Rotors.Length; i++)
+                {
+                    Rotors[i].save();
+                }
+            }
+
+            Console.WriteLine("[ROTORS SAVED]");
         }
     }
 }
+            /*
+            Encoding en1 = Encoding.UTF8;
+            Encoding en2 = Encoding.Default;
+
+
+            int n = 1000;
+            Byte[] encodedBytes = new byte[n];
+
+            for (int i = 0; i < n; i++)
+            {
+                encodedBytes[i] = (byte)i;
+            }
+
+            String decodedString = en2.GetString(encodedBytes);
+
+            Console.WriteLine("----------------------------------");
+
+            for (int i = 0; i < n; i++)
+            {
+                Console.WriteLine($"[{i}] : [{decodedString[i]}]");
+            }
+
+            //Console.WriteLine(decodedString);
+            Console.WriteLine("----------------------------------");
+            */

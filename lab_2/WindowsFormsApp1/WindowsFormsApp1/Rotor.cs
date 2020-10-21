@@ -12,7 +12,7 @@ namespace WindowsFormsApp1
         private int[] alphabet;
         private int pos;
         private int[] symbols;
-        private int[] defaultSymbols;
+        private int savedPos;
 
         public int[] Alphabet
         { get; set; }
@@ -20,7 +20,7 @@ namespace WindowsFormsApp1
         { get; set; }
         public int[] Symbols
         { get; set; }
-        public int[] DefaultSymbols
+        public int SavedPos
         { get; set; }
 
         // Constructors
@@ -28,6 +28,7 @@ namespace WindowsFormsApp1
         {
             Alphabet = alphabet;
             Pos = 0;
+            SavedPos = 0;
 
             Random randObj = new Random();
             int[] data = new int[Alphabet.Length];
@@ -41,9 +42,6 @@ namespace WindowsFormsApp1
                 data[j] = Alphabet[i];
             }
             Symbols = data;
-
-            DefaultSymbols = new int[Symbols.Length];
-            Array.Copy(Symbols, DefaultSymbols, Symbols.Length);
         }
 
         // Methods
@@ -66,9 +64,23 @@ namespace WindowsFormsApp1
             }
         }
 
-        public void restore()
+        public void load()
         {
-            Array.Copy(DefaultSymbols, Symbols, Symbols.Length);
+            Pos = SavedPos;
+        }
+
+        public void save()
+        {
+            SavedPos = Pos;
+        }
+
+        // !!!!!!!!!!!!
+        public void printSymbols()
+        {
+            for (int i = 0; i < Symbols.Length; i++)
+            {
+                Console.Write($"{Symbols[i]} ");
+            }
         }
     }
 }
