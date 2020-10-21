@@ -8,7 +8,8 @@ class Rotor:
         self.symbols = sample(self.alphabet, k=len(self.alphabet))
 
     def forward(self, symbol):
-        return self.symbols[self.alphabet.index(symbol) - self.pos]
+        #return self.symbols[self.alphabet.index(symbol) - self.pos]
+        return self.symbols[(len(self.alphabet) + self.alphabet.index(symbol) - self.pos) % len(self.alphabet)]
 
     def backward(self, symbol):
         return (self.symbols.index(symbol) + self.pos) % len(self.alphabet)
@@ -68,29 +69,23 @@ def encode(rotors, deflector, message):
 
 
 def main():
-    alph_size = 26  # 10
+    alph_size = 256  # 10
     alphabet = [i for i in range(alph_size)]
 
     #message = [3, 4, 8, 5, 0]
     #message = [6, 7, 5, 0, 7]
     message = [randint(0, alph_size - 1) for i in range(50)]
 
+    rotors = []
+    for i in range(3):
+        r = Rotor(alphabet)
+        rotors.append(r)
 
-    rotor_1 = Rotor(alphabet)
-    rotor_2 = Rotor(alphabet)
-    rotor_3 = Rotor(alphabet)
-    # rotor_1.symbols = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
-    # rotor_2.symbols = [4, 5, 6, 7, 8, 9, 0, 1, 2, 3]
-    # rotor_3.symbols = [7, 8, 9, 0, 1, 2, 3, 4, 5, 6]
+    rotors[0].symbols = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
+    rotors[1].symbols = [4, 5, 6, 7, 8, 9, 0, 1, 2, 3]
+    rotors[2].symbols = [7, 8, 9, 0, 1, 2, 3, 4, 5, 6]
     deflector = Deflector(alphabet)
 
-    rotors = [rotor_1, rotor_2, rotor_3]
-    print(rotor_1.symbols)
-    print(rotor_2.symbols)
-    print(rotor_3.symbols)
-
-
-    print()
     print(message)
 
     new_mes = encode(rotors, deflector, message)
