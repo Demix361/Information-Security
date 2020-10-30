@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace EnigmaConsole
+namespace EnigmaGUI
 {
     class Reflector
     {
@@ -16,11 +18,10 @@ namespace EnigmaConsole
         { get; set; }
 
         // Constructors
-        public Reflector(int alphSize)
+        public Reflector(int alphSize, Random randObj)
         {
             Size = alphSize;
             Symbols = new int[Size];
-            Random randObj = new Random();
 
             for (int i = 0; i < Size; i++)
             {
@@ -29,7 +30,7 @@ namespace EnigmaConsole
 
             for (int i = 0; i < Size / 2; i++)
             {
-                while(true)
+                while (true)
                 {
                     int a = randObj.Next(256);
                     int b = randObj.Next(256);
@@ -43,6 +44,11 @@ namespace EnigmaConsole
 
             }
 
+        }
+        public Reflector(int alphSize)
+        {
+            Size = alphSize;
+            Symbols = new int[Size];
         }
 
         // Methods
