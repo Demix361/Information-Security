@@ -10,29 +10,19 @@ namespace ConsoleDES
             DES des = new DES();
 
             string basepath = @"D:\Libraries\Music\source\";
-            string filetype = ".png";
-            string inFilename = basepath + "emoji" + filetype;
+            string filetype = ".docx";
+            string inFilename = basepath + "fil" + filetype;
             string outFilename = basepath + "FILE_enc" + filetype;
             string outFilename2 = basepath + "FILE_dec" + filetype;
             string key = "1111000011110000110011000011001111110000111100001100110000110011";
 
-            FileStream inF = new FileStream(inFilename, FileMode.Open);
-            FileStream outF = new FileStream(outFilename, FileMode.Create);
+            string key2 = "ad128906ff43a1a0";
+            string key_2_bit = des.keyHexToBit(key2);
 
-            des.encrypt(inF, outF, key);
 
-            inF.Close();
-            outF.Close();
+            des.encrypt(inFilename, outFilename, key_2_bit);
 
-            
-            inF = new FileStream(outFilename, FileMode.Open);
-            outF = new FileStream(outFilename2, FileMode.Create);
-
-            des.decrypt(inF, outF, key);
-
-            inF.Close();
-            outF.Close();
-            
+            des.decrypt(outFilename, outFilename2, key_2_bit);
 
         }
     }

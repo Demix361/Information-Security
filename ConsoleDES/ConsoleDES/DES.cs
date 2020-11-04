@@ -361,7 +361,8 @@ namespace ConsoleDES
 
         public void writeBlock(string block, Stream outStream)
         {
-            for (int i = 0; i < 8; i ++)
+            int n = block.Length / 8;
+            for (int i = 0; i < n; i ++)
             {
                 string sym_str = block.Substring(i * 8, 8);
                 int sym = Convert.ToInt32(sym_str, 2);
@@ -370,8 +371,11 @@ namespace ConsoleDES
             }
         }
 
-        public void encrypt(Stream inStream, Stream outStream, string key)
+        public void encrypt(string inFilename, string outFilename, string key)
         {
+            FileStream inStream = new FileStream(inFilename, FileMode.Open);
+            FileStream outStream = new FileStream(outFilename, FileMode.Create);
+
             int[] block = new int[64];
             int sym;
             int i = 0;
@@ -380,6 +384,18 @@ namespace ConsoleDES
 
             string strBin = string.Empty;
             string strAllbin = string.Empty;
+
+
+            int fileLen = (int) new FileInfo(inFilename).Length;
+
+            string fileLen_str = Convert.ToString(fileLen, 2);
+            fileLen_str = fileLen_str.PadLeft(64, '0');
+
+            for (int j = 0; j < 8; j++)
+            {
+                int fLen_part = Convert.ToInt32(fileLen_str.Substring(j * 8, 8), 2);
+                outStream.WriteByte((byte)fLen_part);
+            }
 
             while (inStream.CanRead)
             {
@@ -410,9 +426,6 @@ namespace ConsoleDES
                     {
                         i = 0;
 
-                        if (x < 21)
-                            Console.Write($"{x} : {strAllbin}\n");
-
                         strAllbin = encryptBlock(strAllbin, key);
                         writeBlock(strAllbin, outStream);
                         
@@ -422,10 +435,16 @@ namespace ConsoleDES
                     k += 1;
                 }
             }
+
+            inStream.Close();
+            outStream.Close();
         }
 
-        public void decrypt(Stream inStream, Stream outStream, string key)
+        public void decrypt(string inFilename, string outFilename, string key)
         {
+            FileStream inStream = new FileStream(inFilename, FileMode.Open);
+            FileStream outStream = new FileStream(outFilename, FileMode.Create);
+
             int[] block = new int[64];
             int sym;
             int i = 0;
@@ -435,23 +454,22 @@ namespace ConsoleDES
             string strBin = string.Empty;
             string strAllbin = string.Empty;
 
+
+            int fileLen = (int) new FileInfo(inFilename).Length - 8;
+            string fileLen_str = string.Empty;
+            for (int j = 0; j < 8; j++)
+            {
+                int len_part = inStream.ReadByte();
+                fileLen_str += Convert.ToString(len_part, 2).PadLeft(8, '0');
+            }
+
+            int OGfileLen = Convert.ToInt32(fileLen_str, 2);
+
             while (inStream.CanRead)
             {
-
                 sym = inStream.ReadByte();
                 if (sym == -1)
                 {
-                    int n = 64 - strAllbin.Length;
-
-                    if (n != 64)
-                    {
-                        for (int j = 0; j < n; j++)
-                            strAllbin += "0";
-
-                        strAllbin = encryptBlock(strAllbin, key);
-                        writeBlock(strAllbin, outStream);
-                    }
-
                     break;
                 }
                 else
@@ -463,21 +481,46 @@ namespace ConsoleDES
                     i += 1;
                     if (i == 8)
                     {
-                        i = 0;
+                        if (x * 8 == fileLen)
+                        {
+                            i = 0;
+                            strAllbin = decryptBlock(strAllbin, key);
+                            writeBlock(strAllbin.Substring(0, 64 - (fileLen - OGfileLen) * 8), outStream);
 
-                        strAllbin = decryptBlock(strAllbin, key);
-                        writeBlock(strAllbin, outStream);
+                            strAllbin = string.Empty;
+                            x += 1;
+                        }
+                        else
+                        {
+                            i = 0;
 
-                        if (x < 21)
-                            Console.Write($"{x} : {strAllbin}\n");
-                        
-                        strAllbin = string.Empty;
-                        x += 1;
+                            strAllbin = decryptBlock(strAllbin, key);
+                            writeBlock(strAllbin, outStream);
+
+                            strAllbin = string.Empty;
+                            x += 1;
+                        }
                     }
                     k += 1;
                 }
             }
+            inStream.Close();
+            outStream.Close();
         }
 
+        public string keyHexToBit(string key)
+        {
+            string bit_str = string.Empty;
+
+            for (int i = 0; i < 16; i++)
+            {
+                int a = Convert.ToInt32(key.Substring(i, 1), 16);
+
+                string b = Convert.ToString(a, 2);
+                bit_str += b.PadLeft(4, '0');
+            }
+
+            return bit_str;
+        }
     }
 }

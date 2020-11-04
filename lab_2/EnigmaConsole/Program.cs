@@ -8,12 +8,10 @@ namespace EnigmaConsole
         {
             Enigma machine = new Enigma(3, 256);
 
-            string pathBase = @"D:\Libraries\Music\";
-            string fileType = ".txt";
-            //string fileType = ".docx";
+            string pathBase = @"D:\Libraries\Music\enigma\";
+            string fileType = ".docx";
             string pathCnfg = pathBase + "cnfg.ngm";
-            //string pathIn =  pathBase + "TEMY_DOKL_I_REF_ANTIChNAYa_FILOSOFIYa";
-            string pathIn = pathBase + "test" + fileType;
+            string pathIn = pathBase + "fil" + fileType;
             string pathOut = pathBase + "file_enc" + fileType;
             string pathOut2 = pathBase + "file_dec" + fileType;
 
