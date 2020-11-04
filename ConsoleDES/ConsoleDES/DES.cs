@@ -29,6 +29,122 @@ namespace ConsoleDES
             return newBlock;
         }
 
+        //64 key -> 16 48bit ikeys
+        public string[] keysGen(string key)
+        {
+            string newKey = oddKey(key);
+            string[] roundKeys = new string[16];
+
+            int[] C =
+            {
+57, 49, 41, 33, 25, 17, 9,
+1,  58, 50, 42, 34, 26, 18,
+10, 2,  59, 51, 43, 35, 27,
+19, 11, 3,  60, 52, 44, 36
+            };
+
+            int[] D =
+            {
+                63, 55, 47, 39, 31, 23, 15,
+7,  62, 54, 46, 38, 30, 22,
+14, 6,  61, 53, 45, 37, 29,
+21, 13, 5,  28, 20, 12, 4
+            };
+
+            int[] shiftTable = { 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1 };
+
+            int[] reduceKeyTable = { 14, 17,  11,  24,  1,   5,   3,   28,  15,  6,   21,  10,  23,  19,  12,  4,
+26,  8,   16,  7,   27,  20,  13,  2,   41,  52,  31,  37,  47,  55,  30,  40,
+51,  45,  33,  48,  44,  49,  39,  56,  34,  53,  46,  42,  50,  36,  29,  32 };
+
+            int pos = 0;
+
+            for (int i = 0; i < 16; i++)
+            {
+                pos += shiftTable[i];
+                string tempKey = string.Empty;
+                string tempKey2 = string.Empty;
+                roundKeys[i] = string.Empty;
+
+                for (int j = 0; j < 56; j++)
+                {
+                    if (j < 26)
+                    {
+                        tempKey += newKey[C[(j + pos) % 26] - 1];
+                    }
+                    else
+                    {
+                        tempKey += newKey[D[(j - 26 + pos) % 26] - 1];
+                    }
+                }
+
+                for (int j = 0; j < 48; j++)
+                {
+                    roundKeys[i] += tempKey[reduceKeyTable[j] - 1];
+                }
+
+
+            }
+
+
+            return roundKeys;
+        }
+
+        //every 8th bit in 64key changes so every byte has odd number of "1"
+        public string oddKey(string key)
+        {
+            string newKey = string.Empty;
+            int ones = 0;
+
+            for (int i = 0; i < 8; i++)
+            {
+                ones = 0;
+
+                for (int j = 0; j < 8; j++)
+                {
+                    if (j != 7 && key[i * 8 + j] == '1')
+                    {
+                        ones += 1;
+                    }    
+                    if (j == 7)
+                    {
+                        if (ones % 2 == 0)
+                            newKey += '1';
+                        else
+                            newKey += '0';
+                    }
+                    else
+                    {
+                        newKey += key[i * 8 + j];
+                    }
+
+                }
+            }
+
+            return newKey;
+        }
+
+        // 32 -> 32
+        public string P(string block)
+        {
+            int[] permutations =
+            {
+                16, 7,  20, 21, 29, 12, 28, 17,
+1,  15, 23, 26, 5,  18, 31, 10,
+2,  8,  24, 14, 32, 27, 3,  9,
+19, 13, 30, 6, 22,  11, 4,  25
+            };
+
+            string newBlock = string.Empty;
+
+            for (int i = 0; i < 64; i++)
+            {
+                newBlock += block[permutations[i] - 1];
+            }
+
+            return newBlock;
+        }
+
         // 32 -> 48
         public string E(string block)
         {
@@ -53,7 +169,49 @@ namespace ConsoleDES
             return newBlock;
         }
 
-        public string S(string block)
+        public string xor(string a, string b)
+        {
+            string c = string.Empty;
+            int n = a.Length;
+
+            for (int i = 0; i < n; i++)
+            {
+                if (a[i] == b[i])
+                    c += '0';
+                else
+                    c += '1';
+            }
+
+            return c;
+        }
+
+        public string Feistel(string LRblock, string roundKey)
+        {
+            string left = string.Empty;
+            string right = string.Empty;
+            string res = string.Empty;
+
+            for (int i = 0; i < 64; i++)
+            {
+                if (i < 32)
+                {
+                    left += LRblock[i];
+                }
+                else
+                {
+                    right += LRblock[i];
+                }
+
+            }
+
+            res += right;
+            res += xor(left, f(right, roundKey));
+
+            return res;
+
+        }
+
+        public string f(string block, string key)
         {
             int[,] s1 = new int[4, 16] {
  { 14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7 },
@@ -61,6 +219,7 @@ namespace ConsoleDES
  { 4, 1, 14, 8, 13, 6, 2, 11, 15, 12, 9, 7, 3, 10, 5, 0 },
  { 15, 12, 8, 2, 4, 9, 1, 7, 5, 11, 3, 14, 10, 0, 6, 13 }
 };
+
             int[,] s2 = new int[4, 16] {
  { 15, 1, 8, 14, 6, 11, 3, 4, 9, 7, 2, 13, 12, 0, 5, 10 },
  { 3, 13, 4, 7, 15, 2, 8, 14, 12, 0, 1, 10, 6, 9, 11, 5 },
@@ -110,6 +269,25 @@ namespace ConsoleDES
  { 2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11 }
 };
 
+            int[] allS = new int[8, 4, 16];// { s1, s2, s3, s4, s5, s6, s7, s8 };
+
+            allS[0] = s1;
+
+            block = E(block); // 48bit block
+
+            string b = xor(block, key);
+
+            for (int j = 0; j < 8; j++)
+            {
+                string bj = string.Empty;
+
+                for (int k = 0; k < 6; k++)
+                    bj += b[j * 8 + k];
+
+            }
+
+            
+
         }
 
         public string finalPermutation(string block)
@@ -131,12 +309,23 @@ namespace ConsoleDES
             return newBlock;
         }
 
-        public void encryptAlgorithm()
+        public string encryptAlgorithm(string block, string key)
         {
+            string[] roundKeys = keysGen(key);
 
+            block = initialPermutation(block);
+
+            for (int i = 0; i < 16; i++)
+            {
+                block = Feistel(block, roundKeys[i]);
+            }
+
+            block = finalPermutation(block);
+
+            return block;
         }
 
-        public void encrypt(Stream inStream, Stream outStream)
+        public void encrypt(Stream inStream, Stream outStream, string key)
         {
             int[] block = new int[64];
             int sym;
