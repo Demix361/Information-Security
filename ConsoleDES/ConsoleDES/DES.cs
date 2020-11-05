@@ -1,154 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Collections;
-using System.Security.Cryptography;
 
 namespace ConsoleDES
 {
     class DES
     {
+        int[] IPtable;
+        int[] Etable;
+        int[,,] Stable;
+        int[] Ptable;
+        int[] FPtable;
+        int[] Ctable;
+        int[] Dtable;
+        int[] Sitable;
+        int[] CPtable;
 
-        public string initialPermutation(string block)
+        public DES()
         {
-            int[] permutations = {
+            IPtable = new int[64]
+            {
                 58, 50, 42, 34, 26, 18, 10, 2, 60, 52, 44, 36, 28, 20, 12, 4,
                 62, 54, 46, 38, 30, 22, 14, 6, 64, 56, 48, 40, 32, 24, 16, 8,
                 57, 49, 41, 33, 25, 17, 9, 1, 59, 51, 43, 35, 27, 19, 11, 3,
                 61, 53, 45, 37, 29, 21, 13, 5, 63, 55, 47, 39, 31, 23, 15, 7
             };
 
-            string newBlock = string.Empty;
-
-            for (int i = 0; i < 64; i++)
-            {
-                newBlock += block[permutations[i] - 1];
-            }
-
-            return newBlock;
-        }
-
-        //64 key -> 16 48bit ikeys
-        public string[] keysGen(string key)
-        {
-            string newKey = oddKey(key);
-            string[] roundKeys = new string[16];
-
-            int[] C =
-            {
-                57, 49, 41, 33, 25, 17, 9,
-                1,  58, 50, 42, 34, 26, 18,
-                10, 2,  59, 51, 43, 35, 27,
-                19, 11, 3,  60, 52, 44, 36
-            };
-
-            int[] D =
-            {
-                63, 55, 47, 39, 31, 23, 15,
-                7,  62, 54, 46, 38, 30, 22,
-                14, 6,  61, 53, 45, 37, 29,
-                21, 13, 5,  28, 20, 12, 4
-            };
-
-            int[] shiftTable = { 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1 };
-
-            int[] reduceKeyTable = 
-            {
-                14, 17,  11,  24,  1,   5,   3,   28,  15,  6,   21,  10,  23,  19,  12,  4,
-                26,  8,   16,  7,   27,  20,  13,  2,   41,  52,  31,  37,  47,  55,  30,  40,
-                51,  45,  33,  48,  44,  49,  39,  56,  34,  53,  46,  42,  50,  36,  29,  32 
-            };
-
-            int pos = 0;
-
-            for (int i = 0; i < 16; i++)
-            {
-                pos += shiftTable[i];
-                string tempKey = string.Empty;
-                string tempKey2 = string.Empty;
-                roundKeys[i] = string.Empty;
-
-                for (int j = 0; j < 56; j++)
-                {
-                    if (j < 26)
-                    {
-                        tempKey += newKey[C[(j + pos) % 26] - 1];
-                    }
-                    else
-                    {
-                        tempKey += newKey[D[(j - 26 + pos) % 26] - 1];
-                    }
-                }
-
-                for (int j = 0; j < 48; j++)
-                {
-                    roundKeys[i] += tempKey[reduceKeyTable[j] - 1];
-                }
-            }
-
-            return roundKeys;
-        }
-
-        //every 8th bit in 64key changes so every byte has odd number of "1"
-        public string oddKey(string key)
-        {
-            string newKey = string.Empty;
-            int ones = 0;
-
-            for (int i = 0; i < 8; i++)
-            {
-                ones = 0;
-
-                for (int j = 0; j < 8; j++)
-                {
-                    if (j != 7 && key[i * 8 + j] == '1')
-                    {
-                        ones += 1;
-                    }    
-                    if (j == 7)
-                    {
-                        if (ones % 2 == 0)
-                            newKey += '1';
-                        else
-                            newKey += '0';
-                    }
-                    else
-                    {
-                        newKey += key[i * 8 + j];
-                    }
-
-                }
-            }
-
-            return newKey;
-        }
-
-        // 32 -> 32
-        public string P(string block)
-        {
-            int[] permutations =
-            {
-                16, 7,  20, 21, 29, 12, 28, 17,
-                1,  15, 23, 26, 5,  18, 31, 10,
-                2,  8,  24, 14, 32, 27, 3,  9,
-                19, 13, 30, 6, 22,  11, 4,  25
-            };
-
-            string newBlock = string.Empty;
-
-            for (int i = 0; i < 32; i++)
-            {
-                newBlock += block[permutations[i] - 1];
-            }
-
-            return newBlock;
-        }
-
-        // 32 -> 48
-        public string E(string block)
-        {
-            int[] permutations = 
+            Etable = new int[48]
             {
                 32, 1,  2,  3,  4,  5,
                 4,  5,  6,  7,  8,  9,
@@ -160,66 +37,7 @@ namespace ConsoleDES
                 28, 29, 30, 31, 32, 1
             };
 
-            string newBlock = string.Empty;
-
-            for (int i = 0; i < 48; i++)
-            {
-                newBlock += block[permutations[i] - 1];
-            }
-
-            return newBlock;
-        }
-
-        public string xor(string a, string b)
-        {
-            string c = string.Empty;
-            int n = a.Length;
-
-            for (int i = 0; i < n; i++)
-            {
-                if (a[i] == b[i])
-                    c += '0';
-                else
-                    c += '1';
-            }
-
-            return c;
-        }
-
-        public string Feistel(string LRblock, string roundKey)
-        {
-            string left = string.Empty;
-            string right = string.Empty;
-            string res = string.Empty;
-
-            left = LRblock.Substring(0, 32);
-            right = LRblock.Substring(32, 32);
-
-            res += right;
-            res += xor(left, f(right, roundKey));
-
-            return res;
-        }
-
-        public string FeistelReverse(string LRblock, string roundKey)
-        {
-            string left = string.Empty;
-            string right = string.Empty;
-            string res = string.Empty;
-
-            left = LRblock.Substring(0, 32);
-            right = LRblock.Substring(32, 32);
-
-            res += right;
-            res += xor(left, f(right, roundKey));
-
-            return res;
-        }
-
-        public string f(string block, string key)
-        {
-
-            int[,,] S = new int[8, 4, 16] 
+            Stable = new int[8, 4, 16]
             {
                 {
                     { 14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7 },
@@ -278,26 +96,191 @@ namespace ConsoleDES
                 }
             };
 
-            block = E(block); // 48bit block
+            Ptable = new int[32]
+            {
+                16, 7,  20, 21, 29, 12, 28, 17,
+                1,  15, 23, 26, 5,  18, 31, 10,
+                2,  8,  24, 14, 32, 27, 3,  9,
+                19, 13, 30, 6, 22,  11, 4,  25
+            };
 
-            string b = xor(block, key);
+            FPtable = new int[64]
+            {
+                40, 8,  48, 16, 56, 24, 64, 32, 39, 7,  47, 15, 55, 23, 63, 31,
+                38, 6,  46, 14, 54, 22, 62, 30, 37, 5,  45, 13, 53, 21, 61, 29,
+                36, 4,  44, 12, 52, 20, 60, 28, 35, 3,  43, 11, 51, 19, 59, 27,
+                34, 2,  42, 10, 50, 18, 58, 26, 33, 1,  41, 9,  49, 17, 57, 25
+            };
+
+            Ctable = new int[28]
+            {
+                57, 49, 41, 33, 25, 17, 9,
+                1,  58, 50, 42, 34, 26, 18,
+                10, 2,  59, 51, 43, 35, 27,
+                19, 11, 3,  60, 52, 44, 36
+            };
+
+            Dtable = new int[28]
+            {
+                63, 55, 47, 39, 31, 23, 15,
+                7,  62, 54, 46, 38, 30, 22,
+                14, 6,  61, 53, 45, 37, 29,
+                21, 13, 5,  28, 20, 12, 4
+            };
+
+            Sitable = new int[16]
+            {
+                1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1
+            };
+
+            CPtable = new int[48]
+            {
+                14, 17,  11,  24,  1,   5,   3,   28,  15,  6,   21,  10,  23,  19,  12,  4,
+                26,  8,   16,  7,   27,  20,  13,  2,   41,  52,  31,  37,  47,  55,  30,  40,
+                51,  45,  33,  48,  44,  49,  39,  56,  34,  53,  46,  42,  50,  36,  29,  32
+            };
+        }
+
+        // Permutaion function 64-bit -> 64-bit
+        public string IP(string block)
+        {
+            string newBlock = string.Empty;
+
+            for (int i = 0; i < 64; i++)
+                newBlock += block[IPtable[i] - 1];
+
+            return newBlock;
+        }
+
+        // Permutaion function 32-bit -> 48-bit
+        public string E(string block)
+        {
+            string newBlock = string.Empty;
+
+            for (int i = 0; i < 48; i++)
+                newBlock += block[Etable[i] - 1];
+
+            return newBlock;
+        }
+
+        // Permutaion function 48-bit -> 32-bit
+        public string P(string block)
+        {
+            string newBlock = string.Empty;
+
+            for (int i = 0; i < 32; i++)
+                newBlock += block[Ptable[i] - 1];
+
+            return newBlock;
+        }
+
+        // Permutaion function 64-bit -> 64-bit
+        public string FP(string block)
+        {
+            string newBlock = string.Empty;
+
+            for (int i = 0; i < 64; i++)
+                newBlock += block[FPtable[i] - 1];
+
+            return newBlock;
+        }
+
+        // Changes every 8th bit in main key so every byte has odd number of "1"
+        public string OddKeyBytes(string key)
+        {
+            string newKey = string.Empty;
+            int ones;
+
+            for (int i = 0; i < 8; i++)
+            {
+                ones = 0;
+
+                for (int j = 0; j < 8; j++)
+                {
+                    if (j == 7)
+                    {
+                        if (ones % 2 == 0)
+                            newKey += '1';
+                        else
+                            newKey += '0';
+                    }
+                    else
+                    {
+                        newKey += key[i * 8 + j];
+                        if (key[i * 8 + j] == '1')
+                            ones += 1;
+                    }
+                }
+            }
+
+            return newKey;
+        }
+
+        // Generates 16 48-bit round keys from main key
+        public string[] RoundKeyGen(string key)
+        {
+            string newKey = OddKeyBytes(key);
+            string[] roundKeys = new string[16];
+
+            int pos = 0;
+
+            for (int i = 0; i < 16; i++)
+            {
+                pos += Sitable[i];
+                string tempKey = string.Empty;
+                roundKeys[i] = string.Empty;
+
+                for (int j = 0; j < 56; j++)
+                {
+                    if (j < 26)
+                        tempKey += newKey[Ctable[(j + pos) % 26] - 1];
+                    else
+                        tempKey += newKey[Dtable[(j - 26 + pos) % 26] - 1];
+                }
+
+                for (int j = 0; j < 48; j++)
+                    roundKeys[i] += tempKey[CPtable[j] - 1];
+            }
+
+            return roundKeys;
+        }
+
+        // XOR function gets two equal sized bit-strings
+        public string XOR(string a, string b)
+        {
+            string c = string.Empty;
+            int n = a.Length;
+
+            for (int i = 0; i < n; i++)
+            {
+                if (a[i] == b[i])
+                    c += '0';
+                else
+                    c += '1';
+            }
+
+            return c;
+        }
+
+        // F function gets 32-bit block, 48-bit round key; returns 32-bit block
+        public string F(string block, string key)
+        {
+            block = E(block);
+
+            string b = XOR(block, key);
             string b_new = string.Empty;
 
             for (int j = 0; j < 8; j++)
             {
-                string bj = string.Empty;
-
-                for (int k = 0; k < 6; k++)
-                    bj += b[j * 6 + k];
+                string bj = b.Substring(j * 6, 6);
 
                 string x_str = bj.Substring(0, 1) + bj.Substring(5, 1);
                 string y_str = bj.Substring(1, 4);
                 int x_num = Convert.ToInt32(x_str, 2);
                 int y_num = Convert.ToInt32(y_str, 2);
 
-                int bj_new_num = S[j, x_num, y_num];
-                string bj_new = Convert.ToString(bj_new_num, 2);
-                bj_new = bj_new.PadLeft(4, '0');
+                int bj_new_num = Stable[j, x_num, y_num];
+                string bj_new = Convert.ToString(bj_new_num, 2).PadLeft(4, '0');
 
                 b_new += bj_new;
             }
@@ -306,221 +289,183 @@ namespace ConsoleDES
             return b_new;
         }
 
-        public string finalPermutation(string block)
+        // Feistel function gets and returns 64-bit block
+        public string Feistel(string LRblock, string roundKey)
         {
-            int[] permutations = {
-                40, 8,  48, 16, 56, 24, 64, 32, 39, 7,  47, 15, 55, 23, 63, 31,
-                38, 6,  46, 14, 54, 22, 62, 30, 37, 5,  45, 13, 53, 21, 61, 29,
-                36, 4,  44, 12, 52, 20, 60, 28, 35, 3,  43, 11, 51, 19, 59, 27,
-                34, 2,  42, 10, 50, 18, 58, 26, 33, 1,  41, 9,  49, 17, 57, 25
-            };
-            
+            string left;
+            string right;
+            string res = string.Empty;
+
+            left = LRblock.Substring(0, 32);
+            right = LRblock.Substring(32, 32);
+
+            res += right;
+            res += XOR(left, F(right, roundKey));
+
+            return res;
+        }
+
+        // Encrypt 64-bit block using array of round keys
+        public string EncryptBlock(string block, string[] roundKeys)
+        {
+            block = IP(block);
+
+            for (int i = 0; i < 16; i++)
+                block = Feistel(block, roundKeys[i]);
+
             block = block.Substring(32, 32) + block.Substring(0, 32);
 
-            string newBlock = string.Empty;
-
-            for (int i = 0; i < 64; i++)
-            {
-                newBlock += block[permutations[i] - 1];
-            }
-
-            return newBlock;
-        }
-
-        public string encryptBlock(string block, string key)
-        {
-            string[] roundKeys = keysGen(key);
-
-            block = initialPermutation(block);
-
-            for (int i = 0; i < 16; i++)
-            {
-                block = Feistel(block, roundKeys[i]);
-            }
-
-            block = finalPermutation(block);
+            block = FP(block);
 
             return block;
         }
 
-        public string decryptBlock(string block, string key)
+        // Decrypt 64-bit block using array of round keys
+        public string DecryptBlock(string block, string[] roundKeys)
         {
-            string[] roundKeys = keysGen(key);
-
-            block = initialPermutation(block);
+            block = IP(block);
 
             for (int i = 0; i < 16; i++)
-            {
-                block = FeistelReverse(block, roundKeys[15 - i]);
-            }
+                block = Feistel(block, roundKeys[15 - i]);
 
-            block = finalPermutation(block);
+            block = block.Substring(32, 32) + block.Substring(0, 32);
+
+            block = FP(block);
 
             return block;
         }
 
-        public void writeBlock(string block, Stream outStream)
+        // Encrypt input file usuing hexademical key
+        public void EncryptFile(string inFilename, string outFilename, string key)
         {
-            int n = block.Length / 8;
-            for (int i = 0; i < n; i ++)
-            {
-                string sym_str = block.Substring(i * 8, 8);
-                int sym = Convert.ToInt32(sym_str, 2);
+            FileStream inFS = new FileStream(inFilename, FileMode.Open);
+            FileStream outFS = new FileStream(outFilename, FileMode.Create);
+            key = TransformKey(key);
 
-                outStream.WriteByte((byte)sym);
-            }
-        }
-
-        public void encrypt(string inFilename, string outFilename, string key)
-        {
-            FileStream inStream = new FileStream(inFilename, FileMode.Open);
-            FileStream outStream = new FileStream(outFilename, FileMode.Create);
-
-            int[] block = new int[64];
             int sym;
+            string block = string.Empty;
             int i = 0;
-            int x = 1;
-            int k = 0;
+            string[] roundKeys = RoundKeyGen(key);
 
-            string strBin = string.Empty;
-            string strAllbin = string.Empty;
-
-
-            int fileLen = (int) new FileInfo(inFilename).Length;
-
-            string fileLen_str = Convert.ToString(fileLen, 2);
-            fileLen_str = fileLen_str.PadLeft(64, '0');
-
+            // Write input file length in 8-byte format to output file
+            int inFileLen = (int)new FileInfo(inFilename).Length;
+            string inFileLenStr = Convert.ToString(inFileLen, 2).PadLeft(64, '0');
             for (int j = 0; j < 8; j++)
             {
-                int fLen_part = Convert.ToInt32(fileLen_str.Substring(j * 8, 8), 2);
-                outStream.WriteByte((byte)fLen_part);
+                int inFileLenPart = Convert.ToInt32(inFileLenStr.Substring(j * 8, 8), 2);
+                outFS.WriteByte((byte)inFileLenPart);
             }
 
-            while (inStream.CanRead)
+            while (inFS.CanRead)
             {
-                sym = inStream.ReadByte();
+                sym = inFS.ReadByte();
+
                 if (sym == -1)
                 {
-                    int n = 64 - strAllbin.Length;
-
-                    if (n != 64)
+                    if (block.Length != 0)
                     {
-                        for (int j = 0; j < n; j++)
-                            strAllbin += "0";
-
-                        strAllbin = encryptBlock(strAllbin, key);
-                        writeBlock(strAllbin, outStream);
+                        block = EncryptBlock(block.PadRight(64, '0'), roundKeys);
+                        WriteBlock(block, outFS);
                     }
 
                     break;
                 }
                 else
                 {
-                    strBin = Convert.ToString((byte)sym, 2);
-                    strBin = strBin.PadLeft(8, '0');
-                    strAllbin += strBin;
+                    block += Convert.ToString((byte)sym, 2).PadLeft(8, '0');
 
                     i += 1;
                     if (i == 8)
                     {
                         i = 0;
 
-                        strAllbin = encryptBlock(strAllbin, key);
-                        writeBlock(strAllbin, outStream);
-                        
-                        strAllbin = string.Empty;
-                        x += 1;
+                        block = EncryptBlock(block, roundKeys);
+                        WriteBlock(block, outFS);
+
+                        block = string.Empty;
                     }
-                    k += 1;
                 }
             }
 
-            inStream.Close();
-            outStream.Close();
+            inFS.Close();
+            outFS.Close();
         }
 
-        public void decrypt(string inFilename, string outFilename, string key)
+        // Decrypt output file using hexademical key
+        public void DecryptFile(string inFilename, string outFilename, string key)
         {
-            FileStream inStream = new FileStream(inFilename, FileMode.Open);
-            FileStream outStream = new FileStream(outFilename, FileMode.Create);
+            FileStream inFS = new FileStream(inFilename, FileMode.Open);
+            FileStream outFS = new FileStream(outFilename, FileMode.Create);
+            key = TransformKey(key);
 
-            int[] block = new int[64];
             int sym;
-            int i = 0;
-            int x = 1;
-            int k = 0;
+            string block = string.Empty;
+            string[] roundKeys = RoundKeyGen(key);
 
-            string strBin = string.Empty;
-            string strAllbin = string.Empty;
-
-
-            int fileLen = (int) new FileInfo(inFilename).Length - 8;
-            string fileLen_str = string.Empty;
+            // Restore original file length from encoded file
+            int inFileLen = (int)new FileInfo(inFilename).Length - 8;
+            string outFileLenStr = string.Empty;
             for (int j = 0; j < 8; j++)
             {
-                int len_part = inStream.ReadByte();
-                fileLen_str += Convert.ToString(len_part, 2).PadLeft(8, '0');
+                int outFileLenPart = inFS.ReadByte();
+                outFileLenStr += Convert.ToString(outFileLenPart, 2).PadLeft(8, '0');
             }
+            int outFileLen = Convert.ToInt32(outFileLenStr, 2);
+            int n = inFileLen / 8 - 1;
 
-            int OGfileLen = Convert.ToInt32(fileLen_str, 2);
-
-            while (inStream.CanRead)
+            for (int i = 0; i < n; i++)
             {
-                sym = inStream.ReadByte();
-                if (sym == -1)
+                for (int j = 0; j < 8; j++)
                 {
-                    break;
+                    sym = inFS.ReadByte();
+                    block += Convert.ToString((byte)sym, 2).PadLeft(8, '0');
                 }
-                else
-                {
-                    strBin = Convert.ToString((byte)sym, 2);
-                    strBin = strBin.PadLeft(8, '0');
-                    strAllbin += strBin;
 
-                    i += 1;
-                    if (i == 8)
-                    {
-                        if (x * 8 == fileLen)
-                        {
-                            i = 0;
-                            strAllbin = decryptBlock(strAllbin, key);
-                            writeBlock(strAllbin.Substring(0, 64 - (fileLen - OGfileLen) * 8), outStream);
-
-                            strAllbin = string.Empty;
-                            x += 1;
-                        }
-                        else
-                        {
-                            i = 0;
-
-                            strAllbin = decryptBlock(strAllbin, key);
-                            writeBlock(strAllbin, outStream);
-
-                            strAllbin = string.Empty;
-                            x += 1;
-                        }
-                    }
-                    k += 1;
-                }
+                block = DecryptBlock(block, roundKeys);
+                WriteBlock(block, outFS);
+                block = string.Empty;
             }
-            inStream.Close();
-            outStream.Close();
+
+            for (int j = 0; j < 8; j++)
+            {
+                sym = inFS.ReadByte();
+                block += Convert.ToString((byte)sym, 2).PadLeft(8, '0');
+            }
+
+            block = DecryptBlock(block, roundKeys);
+            WriteBlock(block.Substring(0, 64 - (inFileLen - outFileLen) * 8), outFS);
+
+            inFS.Close();
+            outFS.Close();
         }
 
-        public string keyHexToBit(string key)
+        // Transforms hexademical key (size = 0..16) to 64 bit key
+        public string TransformKey(string key)
         {
             string bit_str = string.Empty;
+            int n = key.Length;
 
-            for (int i = 0; i < 16; i++)
+            for (int i = 0; i < n; i++)
             {
                 int a = Convert.ToInt32(key.Substring(i, 1), 16);
-
                 string b = Convert.ToString(a, 2);
                 bit_str += b.PadLeft(4, '0');
             }
 
-            return bit_str;
+            return bit_str.PadLeft(64, '0');
+        }
+
+        // Writes 64-bit block to filestream
+        public void WriteBlock(string block, FileStream FS)
+        {
+            int n = block.Length / 8;
+            for (int i = 0; i < n; i++)
+            {
+                string sym_str = block.Substring(i * 8, 8);
+                int sym = Convert.ToInt32(sym_str, 2);
+
+                FS.WriteByte((byte)sym);
+            }
         }
     }
 }
