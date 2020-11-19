@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnigmaGUI", "EnigmaGUI\EnigmaGUI.csproj", "{C22551AD-5D53-4229-8E0F-32F3D41145C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleAES", "ConsoleAES\ConsoleAES.csproj", "{F2EC6936-CDE7-41F8-9970-25978498777B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C22551AD-5D53-4229-8E0F-32F3D41145C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C22551AD-5D53-4229-8E0F-32F3D41145C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C22551AD-5D53-4229-8E0F-32F3D41145C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C22551AD-5D53-4229-8E0F-32F3D41145C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2EC6936-CDE7-41F8-9970-25978498777B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2EC6936-CDE7-41F8-9970-25978498777B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2EC6936-CDE7-41F8-9970-25978498777B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2EC6936-CDE7-41F8-9970-25978498777B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {347C3317-F76B-4B8C-8D09-20149EA4E300}
+		SolutionGuid = {CBC1217B-826F-4D01-BFEB-8226CBE8B6F2}
 	EndGlobalSection
 EndGlobal
