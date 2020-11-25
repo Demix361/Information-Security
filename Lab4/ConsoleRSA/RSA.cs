@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Numerics;
 using System.IO;
 
@@ -24,40 +22,48 @@ namespace ConsoleRSA
             N = P * Q;
             Phi = (P - 1) * (Q - 1);
             E = GenE();
-            D = ExtendedEuclideanAlgorithm(E, Phi);
-
-            Console.WriteLine(Phi);
-            Console.WriteLine(E);
-            Console.WriteLine(D);
-            Console.WriteLine((E * D) % Phi);
-
+            D = HalfExtendedEuclideanAlgorithm(E, Phi);
         }
 
-        // methods
+        public void Info()
+        {
+            Console.WriteLine($"P: {P}");
+            Console.WriteLine($"Q: {Q}");
+            Console.WriteLine($"N = P * Q: {N}");
+            Console.WriteLine($"Phi = (P - 1)(Q - 1): {Phi}");
+            Console.WriteLine($"E: {E}");
+            Console.WriteLine($"D: {D}");
+            Console.WriteLine($"(E * D) % Phi = {(E * D) % Phi}");
+            Console.WriteLine();
+        }
+
+        // Returns coprime to Phi number in range [2, Phi - 1]
         public BigInteger GenE()
         {
             while (true)
             {
-                BigInteger num = RandomBigInteger(Phi - 1) + 1; // [2, Phi - 1]
+                BigInteger num = GenBigIntInterval(Phi - 1) + 1; // [2, Phi - 1]
 
                 if (MillerRabinTest(num, 100))
-                    return num;
+                    if (Phi % num != 0)
+                        return num;
             }
         }
 
+        // Returns prime number of given byte size
         public BigInteger GenPrime(int byteSize)
         {
             while (true)
             {
-                BigInteger num = GenBigInt(byteSize);
+                BigInteger num = GenBigIntByte(byteSize);
 
                 if (MillerRabinTest(num, 100))
                     return num;
             }
         }
 
-        // returns positive BigInteger of given byte length
-        public BigInteger GenBigInt(int byteSize)
+        // Returns random BigInteger of given byte length
+        public BigInteger GenBigIntByte(int byteSize)
         {
             byte[] byteNum = new byte[byteSize + 1];
 
@@ -72,8 +78,8 @@ namespace ConsoleRSA
             return num;
         }
 
-        // returns a random BigInteger [1, N-1].
-        public BigInteger RandomBigInteger(BigInteger N)
+        // Returns random BigInteger in range [1, N-1].
+        public BigInteger GenBigIntInterval(BigInteger N)
         {
             BigInteger result = 0;
 
@@ -103,44 +109,9 @@ namespace ConsoleRSA
                 d /= 2;
             }
 
-            /*
             for (int i = 0; i < rounds; i++)
             {
-                BigInteger a = RandomBigInteger(num - 2) + 1; // [2, n-2]
-                BigInteger x = BigInteger.ModPow(a, d, num);
-
-                if (x != 1 && x != num - 1)
-                {
-                    if (s - 1 < 1)
-                    {
-                        Console.WriteLine($"{i + 1} [1]");
-                        return false;
-                    }
-
-                    for (int j = 0; j < s - 1; j++)
-                    {
-                        x = BigInteger.ModPow(x, 2, num);
-
-                        if (x == num - 1)
-                        {
-                            break;
-                        }
-                        else if (j == s - 2)
-                        {
-                            Console.WriteLine($"{i + 1}  [2] (j={j})");
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            Console.WriteLine(rounds);
-            return true;
-            */
-
-            for (int i = 0; i < rounds; i++)
-            {
-                BigInteger a = RandomBigInteger(num - 2) + 1; // [2, n-2]
+                BigInteger a = GenBigIntInterval(num - 2) + 1; // [2, n-2]
                 BigInteger x = BigInteger.ModPow(a, d, num);
 
                 if (x == 1 || x == num - 1)
@@ -171,8 +142,7 @@ namespace ConsoleRSA
             return true;
         }
 
-        // a > b => a=phi, b=e, t -> d
-        public BigInteger ExtendedEuclideanAlgorithm(BigInteger a, BigInteger b)
+        public BigInteger HalfExtendedEuclideanAlgorithm(BigInteger a, BigInteger b)
         {
             BigInteger x, y, m, q;
             x = 0;
@@ -186,7 +156,7 @@ namespace ConsoleRSA
                 if (a == 0)
                 {
                     Console.WriteLine("Doesnt exist");
-                    return b;
+                    return -1;
                 }
 
                 q = b / a;
@@ -198,7 +168,7 @@ namespace ConsoleRSA
                 if (b == 0)
                 {
                     Console.WriteLine("Doesnt exist");
-                    return a;
+                    return -1;
                 }
 
                 q = a / b;
@@ -209,19 +179,15 @@ namespace ConsoleRSA
 
         }
 
+        // Returns array of encrypted bytes, length with left padding = outSize
         public byte[] EncryptBlock(byte[] block, int outSize)
         {
-            int blockSize = block.Length;
-            //BigInteger num = BytearrToBigint(block);
             BigInteger num = new BigInteger(block, isUnsigned: true, isBigEndian: true);
-
             num = BigInteger.ModPow(num, E, N);
 
             byte[] temp = num.ToByteArray(isUnsigned: true, isBigEndian: true);
             byte[] byteCoded = new byte[outSize];
             Array.Copy(temp, 0, byteCoded, outSize - temp.Length, temp.Length);
-
-            Console.WriteLine($"byteCoded len: {temp.Length} ({blockSize})");
 
             return byteCoded;
         }
@@ -235,7 +201,7 @@ namespace ConsoleRSA
             int blockSize = N.GetByteCount(isUnsigned: true) - cutBytes;
             byte[] block = new byte[blockSize];
             byte[] blockCut;
-            int sym, i = 0, k = 0;
+            int sym, i = 0;
 
             //write to the top of file amount of cut bytes
             int inFileLen = (int)new FileInfo(inFilename).Length;
@@ -254,9 +220,6 @@ namespace ConsoleRSA
                 {
                     if (i != 0)
                     {
-                        k += 1;
-                        Console.Write($"[{k}] ");
-
                         blockCut = new byte[i];
                         Array.Copy(block, blockCut, i);
                         block = EncryptBlock(blockCut, blockSize + cutBytes);
@@ -274,9 +237,6 @@ namespace ConsoleRSA
                     {
                         i = 0;
 
-                        k += 1;
-                        Console.Write($"[{k}] ");
-
                         block = EncryptBlock(block, blockSize + cutBytes);
                         WriteBlock(block, outFS);
 
@@ -289,24 +249,18 @@ namespace ConsoleRSA
             outFS.Close();
         }
 
-
-
+        // Returns array of decrypted bytes, length with left padding = outSize
         public byte[] DecryptBlock(byte[] block, int outSize)
         {
-            int blockSize = block.Length;
             BigInteger num = new BigInteger(block, isUnsigned: true, isBigEndian: true);
-
             num = BigInteger.ModPow(num, D, N);
 
             byte[] temp = num.ToByteArray(isUnsigned: true, isBigEndian: true);
             byte[] byteCoded = new byte[outSize];
             Array.Copy(temp, 0, byteCoded, outSize - temp.Length, temp.Length);
 
-            Console.WriteLine($"byteCoded len: {temp.Length} ({blockSize})");
-
             return byteCoded;
         }
-
 
         public void DecryptFile(string inFilename, string outFilename)
         {
@@ -316,7 +270,7 @@ namespace ConsoleRSA
             int cutBytes = 1;
             int blockSize = N.GetByteCount(isUnsigned: true);
             byte[] block = new byte[blockSize];
-            int sym, k = 0;
+            int sym;
 
             //
             string outFileLenStr = string.Empty;
@@ -329,9 +283,6 @@ namespace ConsoleRSA
             int cutBlockSize = ogFileLen % (blockSize - cutBytes);
             int blocksAmount = ogFileLen / (blockSize - cutBytes);
 
-            Console.WriteLine(blocksAmount);
-            Console.WriteLine(cutBlockSize);
-
             for (int j = 0; j < blocksAmount; j++)
             {
                 for (int i = 0; i < blockSize; i++)
@@ -339,9 +290,6 @@ namespace ConsoleRSA
                     sym = inFS.ReadByte();
                     block[i] = (byte)sym;   
                 }
-
-                k += 1;
-                Console.Write($"[{k}] ");
 
                 block = DecryptBlock(block, blockSize - cutBytes);
                 WriteBlock(block, outFS);
@@ -357,9 +305,6 @@ namespace ConsoleRSA
                     block[i] = (byte)sym;
                 }
 
-                k += 1;
-                Console.Write($"[{k}] ");
-
                 block = DecryptBlock(block, cutBlockSize);
                 WriteBlock(block, outFS);
             }
@@ -368,7 +313,6 @@ namespace ConsoleRSA
             outFS.Close();
         }
 
-
         public void WriteBlock(byte[] block, FileStream FS)
         {
             int n = block.Length;
@@ -376,8 +320,4 @@ namespace ConsoleRSA
                 FS.WriteByte(block[i]);
         }
     }
-
-
-
-    
 }
